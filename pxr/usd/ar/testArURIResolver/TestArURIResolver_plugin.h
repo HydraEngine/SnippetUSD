@@ -17,8 +17,7 @@ public:
     _TestURIResolverContext() = default;
     _TestURIResolverContext(const _TestURIResolverContext&) = default;
 
-    explicit _TestURIResolverContext(const std::string& s)
-            : data(s) {}
+    explicit _TestURIResolverContext(const std::string& s) : data(s) {}
 
     bool operator<(const _TestURIResolverContext& rhs) const { return data < rhs.data; }
 
@@ -27,8 +26,7 @@ public:
     std::string data;
 };
 
-size_t
-hash_value(const _TestURIResolverContext& rhs) {
+size_t hash_value(const _TestURIResolverContext& rhs) {
     return TfHash()(rhs.data);
 }
 
