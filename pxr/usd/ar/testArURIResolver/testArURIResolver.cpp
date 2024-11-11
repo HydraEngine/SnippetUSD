@@ -34,9 +34,7 @@ static void SetupPlugins() {
     // Register TestArURIResolver plugin. We assume the build system will
     // install it to the ArPlugins subdirectory in the same location as
     // this test.
-    const std::string uriResolverPluginPath =
-            TfStringCatPaths(TfGetPathName(ArchGetExecutablePath()), "ArPlugins/lib/TestArURIResolver*/Resources/") +
-            "/";
+    const std::string uriResolverPluginPath = TfGetPathName(ArchGetExecutablePath());
 
     PlugPluginPtrVector plugins = PlugRegistry::GetInstance().RegisterPlugins(uriResolverPluginPath);
 

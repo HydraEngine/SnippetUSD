@@ -5,13 +5,27 @@
 #  property of any third parties.
 
 cmake_minimum_required(VERSION 3.10)
+
 project(testArURIResolver)
 
-add_executable(${PROJECT_NAME}
-        testArURIResolver.cpp
+usd_library(testArURIResolver
+        LIBRARIES
+        ${PXR_LIBRARY_NAMES}
+
+        PUBLIC_HEADERS
+        TestArURIResolver_plugin.h
+
+        CPPFILES
         TestArURIResolver_plugin.cpp
+
+        RESOURCE_FILES
+        plugInfo.json
 )
 
-target_link_libraries(${PROJECT_NAME}
-        ${PXR_LIBRARY_NAMES}
+usd_executable(testArURIResolver-CPP
+        CPPFILES
+        testArURIResolver.cpp
+
+        LIBRARIES
+        ${PXR_LIBRARY_NAMES} testArURIResolver
 )

@@ -9,11 +9,15 @@ find_package(Qt6 COMPONENTS
 
 # Add path for local cmake scripts
 list(APPEND CMAKE_MODULE_PATH
+        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/
         ${CMAKE_CURRENT_SOURCE_DIR}/../USDInstall)
 
 # usd
 include(pxrConfig)
 include_directories(${PXR_INCLUDE_DIRS})
+
+# Include USD plugin building CMake utilities.
+include(USDPluginTools)
 
 set(PXR_LIBRARY_NAMES)
 foreach (_item ${PXR_LIBRARIES}) # Iterate over list of absolute paths
