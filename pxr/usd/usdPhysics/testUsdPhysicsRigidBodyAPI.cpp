@@ -9,9 +9,15 @@
 #include <pxr/base/gf/transform.h>
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/cube.h>
+#include <pxr/usd/usdGeom/xform.h>
+#include <pxr/usd/usdShade/material.h>
+#include <pxr/usd/usdShade/materialBindingAPI.h>
+#include <pxr/usd/usdShade/tokens.h>
 #include <pxr/usd/usdPhysics/metrics.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 #include <pxr/usd/usdPhysics/collisionAPI.h>
+#include <pxr/usd/usdPhysics/massAPI.h>
+#include <pxr/usd/usdPhysics/materialAPI.h>
 #include <pxr/usd/usd/stage.h>
 
 using namespace pxr;
@@ -146,4 +152,106 @@ TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube) {
     rigidBodyPrim = cube.GetPrim();
 
     compare_mass_information(rigidBodyAPI, 1000.0, GfVec3f(166.667), GfVec3f(0.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_rigid_body_density) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(xform.GetPrim());
+
+    // set half the default gravity
+    massAPI.GetDensityAttr().Set(500.0f);
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 500.0, GfVec3f(166.667 * 0.5), GfVec3f(0.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_collider_density) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(cube.GetPrim());
+
+    // set half the default gravity
+    massAPI.GetDensityAttr().Set(500.0f);
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 500.0, GfVec3f(166.667 * 0.5), GfVec3f(0.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_material_density) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+
+    // Create base physics material
+    auto basePhysicsMaterial = UsdShadeMaterial::Define(stage, SdfPath("/basePhysicsMaterial"));
+    auto materialAPI = UsdPhysicsMaterialAPI::Apply(basePhysicsMaterial.GetPrim());
+    // set half the default gravity
+    materialAPI.GetDensityAttr().Set(500.0f);
+    auto bindingAPI = UsdShadeMaterialBindingAPI::Apply(cube.GetPrim());
+    bindingAPI.Bind(basePhysicsMaterial, UsdShadeTokens->weakerThanDescendants, TfToken("physics"));
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 500.0, GfVec3f(166.667 * 0.5), GfVec3f(0.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_density_precedence) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(xform.GetPrim());
+    massAPI.GetDensityAttr().Set(5000.0f);
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+    massAPI = UsdPhysicsMassAPI::Apply(cube.GetPrim());
+
+    // collision density does have precedence
+    massAPI.GetDensityAttr().Set(500.0f);
+
+    // Create base physics material
+    auto basePhysicsMaterial = UsdShadeMaterial::Define(stage, SdfPath("/basePhysicsMaterial"));
+    auto materialAPI = UsdPhysicsMaterialAPI::Apply(basePhysicsMaterial.GetPrim());
+    // set half the default gravity
+    materialAPI.GetDensityAttr().Set(2000.0f);
+    auto bindingAPI = UsdShadeMaterialBindingAPI::Apply(cube.GetPrim());
+    bindingAPI.Bind(basePhysicsMaterial, UsdShadeTokens->weakerThanDescendants, TfToken("physics"));
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 500.0, GfVec3f(166.667 * 0.5), GfVec3f(0.0));
 }
