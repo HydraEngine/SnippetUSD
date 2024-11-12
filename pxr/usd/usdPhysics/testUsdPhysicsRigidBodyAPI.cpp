@@ -255,3 +255,343 @@ TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_density_precedence)
 
     compare_mass_information(rigidBodyAPI, 500.0, GfVec3f(166.667 * 0.5), GfVec3f(0.0));
 }
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_rigid_body_mass) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(xform.GetPrim());
+
+    // increase the mass twice
+    massAPI.GetMassAttr().Set(2000.0f);
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 2000.0, GfVec3f(166.667 * 2.0), GfVec3f(0.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_collider_mass) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(cube.GetPrim());
+
+    // increase the mass twice
+    massAPI.GetMassAttr().Set(2000.0f);
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 2000.0, GfVec3f(166.667 * 2.0), GfVec3f(0.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_mass_precedence) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(xform.GetPrim());
+
+    // increase the mass twice (has a precedence)
+    massAPI.GetMassAttr().Set(2000.0f);
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+    massAPI = UsdPhysicsMassAPI::Apply(cube.GetPrim());
+
+    // increase the mass twice
+    massAPI.GetMassAttr().Set(500.0f);
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 2000.0, GfVec3f(166.667 * 2.0), GfVec3f(0.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_rigid_body_com) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(xform.GetPrim());
+
+    // custom CoM
+    massAPI.GetCenterOfMassAttr().Set(GfVec3f(2.0));
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 1000.0, std::nullopt, GfVec3f(2.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_collider_com) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(cube.GetPrim());
+
+    // custom CoM
+    massAPI.GetCenterOfMassAttr().Set(GfVec3f(2.0));
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 1000.0, std::nullopt, GfVec3f(2.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_com_precedence) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(xform.GetPrim());
+
+    // custom CoM (has precedence)
+    massAPI.GetCenterOfMassAttr().Set(GfVec3f(2.0));
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+    massAPI = UsdPhysicsMassAPI::Apply(cube.GetPrim());
+
+    // custom CoM
+    massAPI.GetCenterOfMassAttr().Set(GfVec3f(1.0));
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 1000.0, std::nullopt, GfVec3f(2.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_rigid_body_inertia) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(xform.GetPrim());
+
+    // custom inertia
+    massAPI.GetDiagonalInertiaAttr().Set(GfVec3f(2.0));
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 1000.0, std::nullopt, GfVec3f(2.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_collider_inertia) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(cube.GetPrim());
+
+    // custom inertia
+    massAPI.GetDiagonalInertiaAttr().Set(GfVec3f(2.0));
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 1000.0, std::nullopt, GfVec3f(2.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_inertia_precedence) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(xform.GetPrim());
+
+    // custom inertia (has precedence)
+    massAPI.GetDiagonalInertiaAttr().Set(GfVec3f(2.0));
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+    massAPI = UsdPhysicsMassAPI::Apply(cube.GetPrim());
+
+    // custom inertia
+    massAPI.GetDiagonalInertiaAttr().Set(GfVec3f(1.0));
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 1000.0, std::nullopt, GfVec3f(2.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_rigid_body_compound) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+
+    auto size = 1.0;
+    auto scale = GfVec3f(3.0, 2.0, 3.0);
+
+    // Create test collider cube0
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube0"));
+    cube.CreateSizeAttr(VtValue(size));
+    cube.AddTranslateOp().Set(GfVec3d(100.0, 20.0, 10.0));
+    auto cube0RotateOp = cube.AddRotateXYZOp();
+    cube0RotateOp.Set(GfVec3f(0.0, 0.0, 45.0));
+    cube.AddScaleOp().Set(scale);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+
+    // Create test collider cube1
+    cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube1"));
+    cube.CreateSizeAttr(VtValue(size));
+    cube.AddTranslateOp().Set(GfVec3d(-100.0, 20.0, 10.0));
+    auto cube1RotateOp = cube.AddRotateXYZOp();
+    cube1RotateOp.Set(GfVec3f(0.0, 0.0, 45.0));
+    cube.AddScaleOp().Set(scale);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    GfVec3f inertia_compare{};
+    GfVec3f centerOfMass{};
+    GfQuatf principalAxes;
+    auto mass = rigidBodyAPI.ComputeMassProperties(&inertia_compare, &centerOfMass, &principalAxes,
+                                                   [this](const UsdPrim& prim) {
+                                                       return mass_information_fn(prim);
+                                                   });
+
+    cube0RotateOp.Set(GfVec3f(0.0, 90.0, 45.0));
+    cube1RotateOp.Set(GfVec3f(0.0, 0.0, 45.0));
+
+    GfVec3f inertia{};
+    mass = rigidBodyAPI.ComputeMassProperties(&inertia, &centerOfMass, &principalAxes, [this](const UsdPrim& prim) {
+        return mass_information_fn(prim);
+    });
+
+    auto toleranceEpsilon = 1;
+    ASSERT_TRUE(GfIsClose(inertia, inertia_compare, toleranceEpsilon));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_rigid_body_principal_axes) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+    auto massAPI = UsdPhysicsMassAPI::Apply(xform.GetPrim());
+
+    // custom principal axes
+    massAPI.GetPrincipalAxesAttr().Set(GfQuatf(0.707, 0.0, 0.707, 0.0));
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 1000.0, std::nullopt, std::nullopt, GfQuatf(0.707, 0.0, 0.707, 0.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_cm_units) {
+    setup_scene(0.01);
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(cube.GetPrim());
+
+    rigidBodyWorldTransform = UsdGeomXformable(cube.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = cube.GetPrim();
+
+    float massScale = 0.01 * 0.01 * 0.01;
+    compare_mass_information(rigidBodyAPI, 1000.0f * massScale, GfVec3f(166.667f * massScale), GfVec3f(0.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_decagram_units) {
+    setup_scene(1.0, 0.1);
+
+    // Create test collider cube
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/cube"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(cube.GetPrim());
+
+    rigidBodyWorldTransform = UsdGeomXformable(cube.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = cube.GetPrim();
+
+    float massScale = 1.0 / 0.1;
+    compare_mass_information(rigidBodyAPI, 1000.0f * massScale, GfVec3f(166.667f * massScale), GfVec3f(0.0));
+}
+
+TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_compound) {
+    setup_scene();
+
+    // top level xform - rigid body
+    auto xform = UsdGeomXform::Define(stage, SdfPath("/xform"));
+    auto rigidBodyAPI = UsdPhysicsRigidBodyAPI::Apply(xform.GetPrim());
+
+    // Create test collider cube0
+    auto cube = UsdGeomCube::Define(stage, SdfPath("/xform/cube0"));
+    cube.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+    cube.AddTranslateOp().Set(GfVec3d(0, 0, -2.0));
+
+    // Create test collision
+    auto cube2 = UsdGeomCube::Define(stage, SdfPath("/xform/cube1"));
+    cube2.GetSizeAttr().Set(1.0);
+    UsdPhysicsCollisionAPI::Apply(cube2.GetPrim());
+    cube2.AddTranslateOp().Set(GfVec3d(0, 0, 2.0));
+
+    rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
+    rigidBodyPrim = xform.GetPrim();
+
+    compare_mass_information(rigidBodyAPI, 1000.0 * 2.0, std::nullopt, GfVec3f(0.0));
+}
