@@ -1,1 +1,2 @@
+add_subdirectory(cameraUtil)
 add_subdirectory(hdSt)

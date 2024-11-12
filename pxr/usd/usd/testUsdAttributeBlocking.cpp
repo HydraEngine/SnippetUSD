@@ -62,14 +62,14 @@ void _CheckDefaultNotBlocked(UsdAttribute& attr, const T expectedValue) {
     VtValue untypedValue;
     UsdAttributeQuery query(attr);
 
-    TF_AXIOM(attr.Get<T>(&value));
-    TF_AXIOM(query.Get<T>(&value));
-    TF_AXIOM(attr.Get(&untypedValue));
-    TF_AXIOM(query.Get(&untypedValue));
-    TF_AXIOM(value == expectedValue);
-    TF_AXIOM(untypedValue.UncheckedGet<T>() == expectedValue);
-    TF_AXIOM(attr.HasValue());
-    TF_AXIOM(attr.HasAuthoredValue());
+    ASSERT_TRUE(attr.Get<T>(&value));
+    ASSERT_TRUE(query.Get<T>(&value));
+    ASSERT_TRUE(attr.Get(&untypedValue));
+    ASSERT_TRUE(query.Get(&untypedValue));
+    ASSERT_TRUE(value == expectedValue);
+    ASSERT_TRUE(untypedValue.UncheckedGet<T>() == expectedValue);
+    ASSERT_TRUE(attr.HasValue());
+    ASSERT_TRUE(attr.HasAuthoredValue());
 }
 
 template <typename T>
@@ -79,13 +79,13 @@ void _CheckDefaultBlocked(UsdAttribute& attr) {
     UsdAttributeQuery query(attr);
     UsdResolveInfo info = attr.GetResolveInfo();
 
-    TF_AXIOM(!attr.Get<T>(&value));
-    TF_AXIOM(!query.Get<T>(&value));
-    TF_AXIOM(!attr.Get(&untypedValue));
-    TF_AXIOM(!query.Get(&untypedValue));
-    TF_AXIOM(!attr.HasValue());
-    TF_AXIOM(!attr.HasAuthoredValue());
-    TF_AXIOM(info.HasAuthoredValueOpinion());
+    ASSERT_TRUE(!attr.Get<T>(&value));
+    ASSERT_TRUE(!query.Get<T>(&value));
+    ASSERT_TRUE(!attr.Get(&untypedValue));
+    ASSERT_TRUE(!query.Get(&untypedValue));
+    ASSERT_TRUE(!attr.HasValue());
+    ASSERT_TRUE(!attr.HasAuthoredValue());
+    ASSERT_TRUE(info.HasAuthoredValueOpinion());
 }
 
 template <typename T>
@@ -94,12 +94,12 @@ void _CheckSampleNotBlocked(UsdAttribute& attr, const double time, const T expec
     VtValue untypedValue;
     UsdAttributeQuery query(attr);
 
-    TF_AXIOM(attr.Get<T>(&value, time));
-    TF_AXIOM(query.Get<T>(&value, time));
-    TF_AXIOM(attr.Get(&untypedValue, time));
-    TF_AXIOM(query.Get(&untypedValue, time));
-    TF_AXIOM(value == expectedValue);
-    TF_AXIOM(untypedValue.UncheckedGet<T>() == expectedValue);
+    ASSERT_TRUE(attr.Get<T>(&value, time));
+    ASSERT_TRUE(query.Get<T>(&value, time));
+    ASSERT_TRUE(attr.Get(&untypedValue, time));
+    ASSERT_TRUE(query.Get(&untypedValue, time));
+    ASSERT_TRUE(value == expectedValue);
+    ASSERT_TRUE(untypedValue.UncheckedGet<T>() == expectedValue);
 }
 
 template <typename T>
@@ -108,10 +108,10 @@ void _CheckSampleBlocked(UsdAttribute& attr, const double time) {
     VtValue untypedValue;
     UsdAttributeQuery query(attr);
 
-    TF_AXIOM(!attr.Get<T>(&value, time));
-    TF_AXIOM(!query.Get<T>(&value, time));
-    TF_AXIOM(!attr.Get(&untypedValue, time));
-    TF_AXIOM(!query.Get(&untypedValue, time));
+    ASSERT_TRUE(!attr.Get<T>(&value, time));
+    ASSERT_TRUE(!query.Get<T>(&value, time));
+    ASSERT_TRUE(!attr.Get(&untypedValue, time));
+    ASSERT_TRUE(!query.Get(&untypedValue, time));
 }
 
 TEST(TestUSD, UsdAttributeBlocking) {
@@ -163,9 +163,9 @@ TEST(TestUSD, UsdAttributeBlocking) {
             // things properly even in the presence of blocks
             sampleAttr.GetBracketingTimeSamples(sample, &lowerPost, &upperPost, &hasSamplePost);
 
-            TF_AXIOM(hasSamplesPre == hasSamplePost);
-            TF_AXIOM(lowerPre == lowerPost);
-            TF_AXIOM(upperPre == upperPost);
+            ASSERT_EQ(hasSamplesPre, hasSamplePost);
+            ASSERT_EQ(lowerPre, lowerPost);
+            ASSERT_EQ(upperPre, upperPost);
         }
 
         // Reset our value
@@ -193,9 +193,9 @@ TEST(TestUSD, UsdAttributeBlocking) {
         // ensure that both default values and time samples are blown away.
         sampleAttr.Block();
         _CheckDefaultBlocked<double>(sampleAttr);
-        TF_AXIOM(sampleAttr.GetNumTimeSamples() == 0);
+        ASSERT_EQ(sampleAttr.GetNumTimeSamples(), 0);
         UsdAttributeQuery sampleQuery(sampleAttr);
-        TF_AXIOM(sampleQuery.GetNumTimeSamples() == 0);
+        ASSERT_EQ(sampleQuery.GetNumTimeSamples(), 0);
 
         for (size_t i = TIME_SAMPLE_BEGIN; i < TIME_SAMPLE_END; ++i) {
             const auto sample = static_cast<double>(i);
