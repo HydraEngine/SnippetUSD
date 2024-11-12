@@ -14,14 +14,14 @@ struct ArchAbiBase1 {
 };
 
 struct ArchAbiBase2 {
-    virtual ~ArchAbiBase2() { }
-    virtual const char* name() const = 0;
+    virtual ~ArchAbiBase2() = default;
+    [[nodiscard]] virtual const char* name() const = 0;
 };
 
 template <class T>
 struct ArchAbiDerived : public ArchAbiBase1, public ArchAbiBase2 {
-    virtual ~ArchAbiDerived() { }
-    virtual const char* name() const { return "ArchAbiDerived"; }
+    ~ArchAbiDerived() override = default;
+    [[nodiscard]] const char* name() const override { return "ArchAbiDerived"; }
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE

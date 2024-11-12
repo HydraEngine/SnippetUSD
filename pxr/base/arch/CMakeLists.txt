@@ -15,10 +15,20 @@ usd_library(TestArchAbiPlugin
 usd_executable(TestArch
         CPPFILES
         testArchAbi.cpp
+        testAttributes.cpp
 
         LIBRARIES
         ${PXR_LIBRARY_NAMES}
         GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main
+)
+
+usd_executable(TestArchPRead
+        CPPFILES
+        testArchPRead.cpp
+
+        LIBRARIES
+        ${PXR_LIBRARY_NAMES}
+#        GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main
 )
 
 add_dependencies(TestArch TestArchAbiPlugin)
