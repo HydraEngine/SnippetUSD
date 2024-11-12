@@ -24,6 +24,7 @@ usd_executable(testArURIResolver-CPP
 
         LIBRARIES
         ${PXR_LIBRARY_NAMES}
+        GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main
 )
 
 add_dependencies(testArURIResolver-CPP TestArURIResolver_plugin TestArPackageResolver_plugin)

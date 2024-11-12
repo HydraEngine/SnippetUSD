@@ -1,0 +1,9 @@
+{
+  "name" : "snippetusd",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "2a3138723698306f4261632c92dc782f586167e3",
+  "dependencies" : [ {
+    "name" : "gtest",
+    "version>=" : "1.15.2"
+  } ]
+}
