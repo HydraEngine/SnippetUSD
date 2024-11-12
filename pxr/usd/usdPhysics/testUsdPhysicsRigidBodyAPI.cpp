@@ -415,7 +415,7 @@ TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_rigid_body_inertia)
     rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
     rigidBodyPrim = xform.GetPrim();
 
-    compare_mass_information(rigidBodyAPI, 1000.0, std::nullopt, GfVec3f(2.0));
+    compare_mass_information(rigidBodyAPI, 1000.0, GfVec3f(2.0));
 }
 
 TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_collider_inertia) {
@@ -437,7 +437,7 @@ TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_collider_inertia) {
     rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
     rigidBodyPrim = xform.GetPrim();
 
-    compare_mass_information(rigidBodyAPI, 1000.0, std::nullopt, GfVec3f(2.0));
+    compare_mass_information(rigidBodyAPI, 1000.0, GfVec3f(2.0));
 }
 
 TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_inertia_precedence) {
@@ -463,7 +463,7 @@ TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_inertia_precedence)
     rigidBodyWorldTransform = UsdGeomXformable(xform.GetPrim()).ComputeLocalToWorldTransform(UsdTimeCode::Default());
     rigidBodyPrim = xform.GetPrim();
 
-    compare_mass_information(rigidBodyAPI, 1000.0, std::nullopt, GfVec3f(2.0));
+    compare_mass_information(rigidBodyAPI, 1000.0, GfVec3f(2.0));
 }
 
 TEST_F(TestUsdPhysicsRigidBodyAPI, test_mass_rigid_body_cube_rigid_body_compound) {
