@@ -17,9 +17,7 @@
 #include "pxr/base/tf/stringUtils.h"
 #include "pxr/base/vt/value.h"
 
-#include <map>
 #include <string>
-#include <vector>
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
@@ -28,20 +26,21 @@ class _TestURIResolverBase : public ArResolver {
 protected:
     _TestURIResolverBase(const std::string& uriScheme) : _uriScheme(uriScheme + ":") {}
 
-    std::string _CreateIdentifier(const std::string& assetPath, const ArResolvedPath& anchorAssetPath) const final {
+    [[nodiscard]] std::string _CreateIdentifier(const std::string& assetPath,
+                                                const ArResolvedPath& anchorAssetPath) const final {
         TF_AXIOM(TfStringStartsWith(TfStringToLowerAscii(assetPath), _uriScheme) ||
                  TfStringStartsWith(TfStringToLowerAscii(anchorAssetPath), _uriScheme));
         return assetPath;
     }
 
-    std::string _CreateIdentifierForNewAsset(const std::string& assetPath,
-                                             const ArResolvedPath& anchorAssetPath) const final {
+    [[nodiscard]] std::string _CreateIdentifierForNewAsset(const std::string& assetPath,
+                                                           const ArResolvedPath& anchorAssetPath) const final {
         TF_AXIOM(TfStringStartsWith(TfStringToLowerAscii(assetPath), _uriScheme) ||
                  TfStringStartsWith(TfStringToLowerAscii(anchorAssetPath), _uriScheme));
         return assetPath;
     }
 
-    ArResolvedPath _Resolve(const std::string& assetPath) const final {
+    [[nodiscard]] ArResolvedPath _Resolve(const std::string& assetPath) const final {
         TF_AXIOM(TfStringStartsWith(TfStringToLowerAscii(assetPath), _uriScheme));
 
         const _TestURIResolverContext* uriContext = _GetCurrentContextPtr();
@@ -52,33 +51,35 @@ protected:
         return ArResolvedPath(assetPath);
     }
 
-    ArResolvedPath _ResolveForNewAsset(const std::string& assetPath) const final { return _Resolve(assetPath); }
+    [[nodiscard]] ArResolvedPath _ResolveForNewAsset(const std::string& assetPath) const final {
+        return _Resolve(assetPath);
+    }
 
-    ArResolverContext _CreateDefaultContext() const final {
+    [[nodiscard]] ArResolverContext _CreateDefaultContext() const final {
         return ArResolverContext(_TestURIResolverContext("CreateDefaultContext"));
     }
 
-    ArResolverContext _CreateDefaultContextForAsset(const std::string& assetPath) const final {
+    [[nodiscard]] ArResolverContext _CreateDefaultContextForAsset(const std::string& assetPath) const final {
         return ArResolverContext(_TestURIResolverContext(TfAbsPath(assetPath)));
     }
 
-    std::shared_ptr<ArAsset> _OpenAsset(const ArResolvedPath& resolvedPath) const final {
+    [[nodiscard]] std::shared_ptr<ArAsset> _OpenAsset(const ArResolvedPath& resolvedPath) const final {
         TF_AXIOM(TfStringStartsWith(TfStringToLowerAscii(resolvedPath), _uriScheme));
         return nullptr;
     }
 
-    ArResolverContext _CreateContextFromString(const std::string& contextStr) const final {
+    [[nodiscard]] ArResolverContext _CreateContextFromString(const std::string& contextStr) const final {
         return ArResolverContext(_TestURIResolverContext(contextStr));
     };
 
-    std::shared_ptr<ArWritableAsset> _OpenAssetForWrite(const ArResolvedPath& resolvedPath,
-                                                        WriteMode writeMode) const final {
+    [[nodiscard]] std::shared_ptr<ArWritableAsset> _OpenAssetForWrite(const ArResolvedPath& resolvedPath,
+                                                                      WriteMode writeMode) const final {
         TF_AXIOM(TfStringStartsWith(TfStringToLowerAscii(resolvedPath), _uriScheme));
         return nullptr;
     }
 
 private:
-    const _TestURIResolverContext* _GetCurrentContextPtr() const {
+    [[nodiscard]] const _TestURIResolverContext* _GetCurrentContextPtr() const {
         return _GetCurrentContextObject<_TestURIResolverContext>();
     }
 

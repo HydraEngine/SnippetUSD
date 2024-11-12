@@ -9,7 +9,6 @@
 #include "TestArURIResolver_plugin.h"
 
 #include "pxr/usd/ar/defaultResolverContext.h"
-#include "pxr/usd/ar/defineResolverContext.h"
 #include "pxr/usd/ar/resolver.h"
 #include "pxr/usd/ar/resolverContext.h"
 #include "pxr/usd/ar/resolverContextBinder.h"
@@ -17,14 +16,12 @@
 #include "pxr/base/arch/systemInfo.h"
 #include "pxr/base/plug/plugin.h"
 #include "pxr/base/plug/registry.h"
-#include "pxr/base/tf/diagnosticMgr.h"
 #include "pxr/base/tf/pathUtils.h"
 #include "pxr/base/tf/setenv.h"
-#include "pxr/base/tf/status.h"
 #include "pxr/base/tf/stringUtils.h"
 #include "pxr/base/tf/token.h"
 
-PXR_NAMESPACE_USING_DIRECTIVE;
+PXR_NAMESPACE_USING_DIRECTIVE
 
 static void SetupPlugins() {
     // Set the preferred resolver to ArDefaultResolver before
@@ -40,6 +37,52 @@ static void SetupPlugins() {
 
     TF_AXIOM(plugins.size() == 1);
     TF_AXIOM(plugins[0]->GetName() == "TestArURIResolver");
+
+    TF_AXIOM(PlugRegistry::GetInstance().GetPluginWithName("TestArURIResolver"));
+    TF_AXIOM(TfType::FindByName("_TestURIResolver"));
+    TF_AXIOM(TfType::FindByName("_TestOtherURIResolver"));
+}
+
+static void TestResolve() {
+    ArResolver& resolver = ArGetResolver();
+
+    // The test URI resolver handles asset paths of the form "test:..."
+    // and simply returns the path unchanged. We can use this to
+    // verify that our test URI resolver is getting invoked.
+
+    // These calls to Resolve should hit the default resolver and not
+    // the URI resolver, and since these files don't exist we expect
+    // Resolve would return ""
+    TF_AXIOM(resolver.Resolve("doesnotexist") == "");
+    TF_AXIOM(resolver.Resolve("doesnotexist.package[foo.file]") == "");
+
+    // These calls should hit the URI resolver, which should return the
+    // given paths unchanged.
+    TF_AXIOM(resolver.Resolve("test://foo") == "test://foo");
+    //    TF_AXIOM(resolver.Resolve("test://foo.package[bar.file]") == "test://foo.package[bar.file]");
+
+    TF_AXIOM(resolver.Resolve("test-other://foo") == "test-other://foo");
+    //    TF_AXIOM(resolver.Resolve("test-other://foo.package[bar.file]") == "test-other://foo.package[bar.file]");
+
+    // These calls should hit the URI resolver since schemes are
+    // case-insensitive.
+    TF_AXIOM(resolver.Resolve("TEST://foo") == "TEST://foo");
+    //    TF_AXIOM(resolver.Resolve("TEST://foo.package[bar.file]") == "TEST://foo.package[bar.file]");
+
+    TF_AXIOM(resolver.Resolve("TEST-OTHER://foo") == "TEST-OTHER://foo");
+    //    TF_AXIOM(resolver.Resolve("TEST-OTHER://foo.package[bar.file]") == "TEST-OTHER://foo.package[bar.file]");
+}
+
+static void TestInvalidScheme() {
+    ArResolver& resolver = ArGetResolver();
+    auto invalid_underbar_path = "test_other:/abc.xyz";
+    auto invalid_utf8_path = "test-π-utf8:/abc.xyz";
+    auto invalid_numeric_prefix_path = "113-test:/abc.xyz";
+    auto invalid_colon_path = "other:test:/abc.xyz";
+    TF_AXIOM(!resolver.Resolve(invalid_underbar_path));
+    TF_AXIOM(!resolver.Resolve(invalid_utf8_path));
+    TF_AXIOM(!resolver.Resolve(invalid_numeric_prefix_path));
+    TF_AXIOM(!resolver.Resolve(invalid_colon_path));
 }
 
 static void TestResolveWithContext() {
@@ -115,7 +158,7 @@ static void TestCreateDefaultContext() {
     // _TestURIResolverContext which we can check for here.
     const ArResolverContext defaultContext = resolver.CreateDefaultContext();
 
-    const _TestURIResolverContext* uriCtx = defaultContext.Get<_TestURIResolverContext>();
+    const auto* uriCtx = defaultContext.Get<_TestURIResolverContext>();
     TF_AXIOM(uriCtx);
     TF_AXIOM(uriCtx->data == "CreateDefaultContext");
 }
@@ -132,7 +175,7 @@ static void TestCreateDefaultContextForAsset() {
         // ArDefaultResolver returns an ArDefaultResolverContext whose search
         // path is set to the directory of the asset.
         {
-            const ArDefaultResolverContext* defaultCtx = defaultContext.Get<ArDefaultResolverContext>();
+            const auto* defaultCtx = defaultContext.Get<ArDefaultResolverContext>();
             TF_AXIOM(defaultCtx);
 
             const ArDefaultResolverContext expectedCtx(std::vector<std::string>{TfGetPathName(TfAbsPath(assetPath))});
@@ -142,7 +185,7 @@ static void TestCreateDefaultContextForAsset() {
         // TestArURIResolver returns a _TestURIResolverContext whose data field
         // is set to the absolute path of the asset.
         {
-            const _TestURIResolverContext* uriCtx = defaultContext.Get<_TestURIResolverContext>();
+            const auto* uriCtx = defaultContext.Get<_TestURIResolverContext>();
             TF_AXIOM(uriCtx);
 
             const _TestURIResolverContext expectedCtx(TfAbsPath("test/test.file"));
@@ -171,6 +214,10 @@ int main(int argc, char** argv) {
 
     printf("TestCreateDefaultContextForAsset ...\n");
     TestCreateDefaultContextForAsset();
+
+    // python
+    TestResolve();
+    TestInvalidScheme();
 
     printf("Test PASSED\n");
     return 0;

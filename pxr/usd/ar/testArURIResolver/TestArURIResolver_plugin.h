@@ -9,6 +9,7 @@
 #include "pxr/usd/ar/defineResolverContext.h"
 #include "pxr/base/tf/hash.h"
 #include <string>
+#include <utility>
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -17,7 +18,7 @@ public:
     _TestURIResolverContext() = default;
     _TestURIResolverContext(const _TestURIResolverContext&) = default;
 
-    explicit _TestURIResolverContext(const std::string& s) : data(s) {}
+    explicit _TestURIResolverContext(std::string s) : data(std::move(s)) {}
 
     bool operator<(const _TestURIResolverContext& rhs) const { return data < rhs.data; }
 
