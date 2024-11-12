@@ -8,6 +8,7 @@ usd_executable(TestUsdPhysics
         CPPFILES
         testUsdPhysicsCollisionGroupAPI.cpp
         testUsdPhysicsMetrics.cpp
+        testUsdPhysicsRigidBodyAPI.cpp
 
         LIBRARIES
         ${PXR_LIBRARY_NAMES}
