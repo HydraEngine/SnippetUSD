@@ -1,9 +1,9 @@
+//  Copyright (c) 2024 Feng Yang
 //
-// Copyright 2020 Pixar
-//
-// Licensed under the terms set forth in the LICENSE.txt file available at
-// https://openusd.org/license.
-//
+//  I am making my contributions/submissions to this project solely in my
+//  personal capacity and am not conveying any rights to any intellectual
+//  property of any third parties.
+
 #include "pxr/pxr.h"
 
 #include "TestArURIResolver_plugin.h"
