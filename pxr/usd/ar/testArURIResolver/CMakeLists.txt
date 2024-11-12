@@ -4,11 +4,7 @@
 #  personal capacity and am not conveying any rights to any intellectual
 #  property of any third parties.
 
-cmake_minimum_required(VERSION 3.10)
-
-project(testArURIResolver)
-
-usd_library(testArURIResolver
+usd_library(TestArURIResolver_plugin
         LIBRARIES
         ${PXR_LIBRARY_NAMES}
 
@@ -27,5 +23,7 @@ usd_executable(testArURIResolver-CPP
         testArURIResolver.cpp
 
         LIBRARIES
-        ${PXR_LIBRARY_NAMES} testArURIResolver
+        ${PXR_LIBRARY_NAMES}
 )
+
+add_dependencies(testArURIResolver-CPP TestArURIResolver_plugin TestArPackageResolver_plugin)

@@ -1,1 +1,2 @@
+add_subdirectory(testArPackageResolver)
 add_subdirectory(testArURIResolver)

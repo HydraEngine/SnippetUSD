@@ -1,0 +1,19 @@
+{
+    "Plugins": [
+        {
+            "Type": "library",
+            "Name": "TestArPackageResolver",
+            "Root": ".",
+            "LibraryPath": "libTestArPackageResolver_plugin.dylib",
+            "ResourcePath": "resources",
+            "Info": {
+                "Types": {
+                    "_TestPackageResolver": {
+                        "bases": ["ArPackageResolver"],
+                        "extensions": ["package"]
+                    }
+                }
+            }
+        }
+    ]
+}
