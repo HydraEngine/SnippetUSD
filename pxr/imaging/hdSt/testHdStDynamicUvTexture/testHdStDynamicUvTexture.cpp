@@ -97,9 +97,9 @@ public:
     ~My_TextureCpuData() override = default;
 
     // Descriptor used to upload data to GPU.
-    const HgiTextureDesc& GetTextureDesc() const override { return _desc; }
-    bool GetGenerateMipmaps() const override { return false; }
-    bool IsValid() const override { return true; }
+    [[nodiscard]] const HgiTextureDesc& GetTextureDesc() const override { return _desc; }
+    [[nodiscard]] bool GetGenerateMipmaps() const override { return false; }
+    [[nodiscard]] bool IsValid() const override { return true; }
 
 private:
     // The descriptor containing a pointer to the data.
@@ -118,20 +118,20 @@ class My_SubtextureIdentifier : public HdStDynamicUvSubtextureIdentifier {
 public:
     My_SubtextureIdentifier(unsigned char blue) : _blue(blue) {}
 
-    std::unique_ptr<HdStSubtextureIdentifier> Clone() const override {
+    [[nodiscard]] std::unique_ptr<HdStSubtextureIdentifier> Clone() const override {
         return std::make_unique<My_SubtextureIdentifier>(_blue);
     }
 
     // The data of the subtexture identifier.
-    unsigned char GetBlue() const { return _blue; }
+    [[nodiscard]] unsigned char GetBlue() const { return _blue; }
 
     // What implements the loading of the texture identified by this
     // subtexture identifier.
-    HdStDynamicUvTextureImplementation* GetTextureImplementation() const override;
+    [[nodiscard]] HdStDynamicUvTextureImplementation* GetTextureImplementation() const override;
 
 protected:
     // Hash.
-    ID _Hash() const override { return _blue; }
+    [[nodiscard]] ID _Hash() const override { return _blue; }
 
 private:
     unsigned char _blue;
@@ -143,7 +143,7 @@ class My_DynamicUvTextureImplementation : public HdStDynamicUvTextureImplementat
 public:
     void Load(HdStDynamicUvTextureObject* texture) override {
         // Get the subtexture identifier.
-        const My_SubtextureIdentifier* const subId =
+        const auto* const subId =
                 dynamic_cast<const My_SubtextureIdentifier*>(texture->GetTextureIdentifier().GetSubtextureIdentifier());
         if (!TF_VERIFY(subId)) {
             return;
@@ -175,7 +175,7 @@ public:
         texture->SetCpuData(nullptr);
     }
 
-    bool IsValid(const HdStDynamicUvTextureObject* texture) { return bool(texture->GetTexture()); }
+    bool IsValid(const HdStDynamicUvTextureObject* texture) override { return bool(texture->GetTexture()); }
 };
 
 // Use implementation as singleton.
@@ -235,15 +235,13 @@ void My_TestGLDrawing::OffscreenTest() {
     _CheckEqual(_textureHandleRegistry->Commit(), {shader}, "Expected shader1 from first commit");
 
     {
-        HdStUvTextureObject* const uvTextureObject =
-                dynamic_cast<HdStUvTextureObject*>(textureHandle1->GetTextureObject().get());
+        auto* const uvTextureObject = dynamic_cast<HdStUvTextureObject*>(textureHandle1->GetTextureObject().get());
         if (!uvTextureObject) {
             std::cout << "Invalid UV texture object" << std::endl;
             exit(EXIT_FAILURE);
         }
 
-        HdStUvSamplerObject* const uvSamplerObject =
-                dynamic_cast<HdStUvSamplerObject*>(textureHandle1->GetSamplerObject().get());
+        auto* const uvSamplerObject = dynamic_cast<HdStUvSamplerObject*>(textureHandle1->GetSamplerObject().get());
         if (!uvSamplerObject) {
             std::cout << "Invalid UV sampler object" << std::endl;
             exit(EXIT_FAILURE);
@@ -254,15 +252,13 @@ void My_TestGLDrawing::OffscreenTest() {
     }
 
     {
-        HdStUvTextureObject* const uvTextureObject =
-                dynamic_cast<HdStUvTextureObject*>(textureHandle2->GetTextureObject().get());
+        auto* const uvTextureObject = dynamic_cast<HdStUvTextureObject*>(textureHandle2->GetTextureObject().get());
         if (!uvTextureObject) {
             std::cout << "Invalid UV texture object" << std::endl;
             exit(EXIT_FAILURE);
         }
 
-        HdStUvSamplerObject* const uvSamplerObject =
-                dynamic_cast<HdStUvSamplerObject*>(textureHandle2->GetSamplerObject().get());
+        auto* const uvSamplerObject = dynamic_cast<HdStUvSamplerObject*>(textureHandle2->GetSamplerObject().get());
         if (!uvSamplerObject) {
             std::cout << "Invalid UV sampler object" << std::endl;
             exit(EXIT_FAILURE);
