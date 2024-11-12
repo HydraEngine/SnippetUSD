@@ -4,9 +4,10 @@
 #  personal capacity and am not conveying any rights to any intellectual
 #  property of any third parties.
 
-usd_executable(testUsdPhysicsCollisionGroupAPI
+usd_executable(TestUsdPhysics
         CPPFILES
         testUsdPhysicsCollisionGroupAPI.cpp
+        testUsdPhysicsMetrics.cpp
 
         LIBRARIES
         ${PXR_LIBRARY_NAMES}
