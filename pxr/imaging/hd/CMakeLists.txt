@@ -16,6 +16,8 @@ usd_executable(TestHydra
         testHdDirtyBitsTranslator.cpp
         testHdDirtyList.cpp
         testHdExtCompDependencySort.cpp
+        testHdExtComputationUtils.cpp
+        testHdMergingSceneIndex.cpp
 
         LIBRARIES
         ${PXR_LIBRARY_NAMES}
