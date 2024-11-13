@@ -13,7 +13,7 @@
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
-static bool HdCommandBasicTest() {
+static void HdCommandBasicTest() {
     Hd_TestDriver driver;
     HdUnitTestDelegate& sceneDelegate = driver.GetDelegate();
 
@@ -23,14 +23,14 @@ static bool HdCommandBasicTest() {
 
     if (!renderDelegate) {
         std::cout << "Failed to get a render delegate" << std::endl;
-        return false;
+        GTEST_FAIL();
     }
 
     HdCommandDescriptors commands = renderDelegate->GetCommandDescriptors();
 
     if (commands.empty()) {
         std::cout << "Failed to get commands" << std::endl;
-        return false;
+        GTEST_FAIL();
     }
 
     if (commands.size() == 1) {
@@ -48,17 +48,14 @@ static bool HdCommandBasicTest() {
     HdCommandArgs args;
     args[TfToken("message")] = "Hello from test.";
     if (!renderDelegate->InvokeCommand(TfToken("print"), args)) {
-        return false;
+        GTEST_FAIL();
     }
-
-    return true;
 }
 
 TEST(TestHydra, test_command) {
     TfErrorMark mark;
 
-    bool success = HdCommandBasicTest();
+    HdCommandBasicTest();
 
     TF_VERIFY(mark.IsClean());
-    ASSERT_TRUE(success && mark.IsClean());
 }

@@ -12,6 +12,7 @@ usd_executable(TestHydra
         testHdCommand.cpp
         testHdContainerDataSourceUtils.cpp
         testHdDataSource.cpp
+        testHdDataSourceLocator.cpp
 
         LIBRARIES
         ${PXR_LIBRARY_NAMES}
