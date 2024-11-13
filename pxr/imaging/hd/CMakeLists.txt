@@ -20,6 +20,8 @@ usd_executable(TestHydra
         testHdMergingSceneIndex.cpp
         testHdPerfLog.cpp
         testHdSceneIndex.cpp
+        testHdSortedIds.cpp
+        testHdSortedIdsPerf.cpp
 
         LIBRARIES
         ${PXR_LIBRARY_NAMES}
