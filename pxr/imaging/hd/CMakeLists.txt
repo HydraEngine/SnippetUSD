@@ -9,6 +9,7 @@ usd_executable(TestHydra
         testHdBufferSourceEmptyVal.cpp
         testHdBufferSpec.cpp
         testHdCollectionExpressionEvaluator.cpp
+        testHdCommand.cpp
 
         LIBRARIES
         ${PXR_LIBRARY_NAMES}
