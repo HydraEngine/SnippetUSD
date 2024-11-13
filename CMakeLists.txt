@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(Qt6 COMPONENTS
         Core Widgets Test
         REQUIRED)
+find_package(X11 REQUIRED)
+
 find_package(GTest CONFIG REQUIRED)
 
 # Add path for local cmake scripts
