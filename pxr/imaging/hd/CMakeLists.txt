@@ -13,6 +13,9 @@ usd_executable(TestHydra
         testHdContainerDataSourceUtils.cpp
         testHdDataSource.cpp
         testHdDataSourceLocator.cpp
+        testHdDirtyBitsTranslator.cpp
+        testHdDirtyList.cpp
+        testHdExtCompDependencySort.cpp
 
         LIBRARIES
         ${PXR_LIBRARY_NAMES}
