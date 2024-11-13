@@ -1,0 +1,16 @@
+#  Copyright (c) 2024 Feng Yang
+#
+#  I am making my contributions/submissions to this project solely in my
+#  personal capacity and am not conveying any rights to any intellectual
+#  property of any third parties.
+
+usd_executable(TestHydraSceneIndex
+        CPPFILES
+        testHdsiComputeSceneIndexDiff.cpp
+        testHdsiPinnedCurveExpandingSceneIndex.cpp
+        testHdsiSwitchingSceneIndex.cpp
+
+        LIBRARIES
+        ${PXR_LIBRARY_NAMES}
+        GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main
+)
