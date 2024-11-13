@@ -8,7 +8,9 @@
 #include <pxr/base/gf/range2d.h>
 #include <pxr/base/gf/matrix4d.h>
 #include <pxr/base/gf/camera.h>
+#include <pxr/base/gf/frustum.h>
 #include <pxr/imaging/cameraUtil/screenWindowParameters.h>
+#include <pxr/imaging/cameraUtil/conformWindow.h>
 
 using namespace pxr;
 
@@ -57,4 +59,90 @@ TEST_F(TestCameraUtil, test_ScreenWindowParameters) {
     cam.SetProjection(GfCamera::Orthographic);
     IsClose(CameraUtilScreenWindowParameters(cam).GetScreenWindow(),
             GfVec4d(-7.6800003051, 10.770000457, -1.0300000190, 1.0300000190));
+}
+
+TEST_F(TestCameraUtil, test_ConformedWindowGfVec2d) {
+    IsClose(CameraUtilConformedWindow(GfVec2d(1.0, 2.0), CameraUtilFit, 3.0), GfVec2d(6.0, 2.0));
+    IsClose(CameraUtilConformedWindow(GfVec2d(9.0, 2.0), CameraUtilFit, 3.0), GfVec2d(9.0, 3.0));
+    IsClose(CameraUtilConformedWindow(GfVec2d(3.3, 4.0), CameraUtilCrop, 1.5), GfVec2d(3.3, 2.2));
+    IsClose(CameraUtilConformedWindow(GfVec2d(10.0, 2.0), CameraUtilCrop, 4), GfVec2d(8.0, 2.0));
+    IsClose(CameraUtilConformedWindow(GfVec2d(0.1, 2.0), CameraUtilCrop, 0.1), GfVec2d(0.1, 1.0));
+    IsClose(CameraUtilConformedWindow(GfVec2d(2.0, 1.9), CameraUtilMatchVertically, 2.0), GfVec2d(3.8, 1.9));
+    IsClose(CameraUtilConformedWindow(GfVec2d(2.1, 1.9), CameraUtilMatchHorizontally, 1.0), GfVec2d(2.1, 2.1));
+    IsClose(CameraUtilConformedWindow(GfVec2d(2.1, 1.9), CameraUtilDontConform, 1.0), GfVec2d(2.1, 1.9));
+}
+
+TEST_F(TestCameraUtil, test_ConformedWindowGfRange2d) {
+    IsClose(CameraUtilConformedWindow(GfRange2d(GfVec2d(-8, -6), GfVec2d(-4, -2)), CameraUtilFit, 3.0),
+            GfRange2d(GfVec2d(-12, -6), GfVec2d(0, -2)));
+    IsClose(CameraUtilConformedWindow(GfRange2d(GfVec2d(-10, -11), GfVec2d(-1, -1)), CameraUtilMatchHorizontally, 1.5),
+            GfRange2d(GfVec2d(-10, -9), GfVec2d(-1, -3)));
+    IsClose(CameraUtilConformedWindow(GfRange2d(GfVec2d(-10, -11), GfVec2d(-1, -1)), CameraUtilMatchVertically, 1.5),
+            GfRange2d(GfVec2d(-13, -11), GfVec2d(2, -1)));
+    IsClose(CameraUtilConformedWindow(GfRange2d(GfVec2d(-10, -11), GfVec2d(-1, -1)), CameraUtilDontConform, 1.5),
+            GfRange2d(GfVec2d(-10, -11), GfVec2d(-1, -1)));
+}
+
+TEST_F(TestCameraUtil, test_ConformedWindowGfVec4d) {
+    IsClose(CameraUtilConformedWindow(GfVec4d(-10, -1, -11, -1), CameraUtilMatchHorizontally, 1.5),
+            GfVec4d(-10, -1, -9, -3));
+}
+
+TEST_F(TestCameraUtil, test_ConformProjectionMatrix) {
+    for (int i = 0; i < 2; ++i) {
+        auto projection = GfCamera::Projection(i);
+        for (int j = 0; j < 5; ++j) {
+            auto policy = CameraUtilConformWindowPolicy(j);
+            for (auto targetAspect : {0.5, 1.0, 2.0}) {
+                for (auto xMirror : {-1, 1}) {
+                    for (auto yMirror : {-1, 1}) {
+                        auto mirrorMatrix = GfMatrix4d(xMirror, 0, 0, 0, 0, yMirror, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                        auto cam = GfCamera(GfMatrix4d(1.0), projection, 100.0, 75.0, 11.0, 12.0);
+                        auto originalMatrix = cam.GetFrustum().ComputeProjectionMatrix();
+                        CameraUtilConformWindow(&cam, policy, targetAspect);
+
+                        IsClose(cam.GetFrustum().ComputeProjectionMatrix() * mirrorMatrix,
+                                CameraUtilConformedWindow(originalMatrix * mirrorMatrix, policy, targetAspect));
+                    }
+                }
+            }
+        }
+    }
+}
+
+TEST_F(TestCameraUtil, test_ConformWindow) {
+    auto cam = GfCamera();
+    cam.SetHorizontalAperture(100.0);
+    cam.SetVerticalAperture(75.0);
+    cam.SetHorizontalApertureOffset(11.0);
+    cam.SetVerticalApertureOffset(12.0);
+
+    CameraUtilConformWindow(&cam, CameraUtilFit, 2.0);
+
+    IsClose(cam.GetHorizontalAperture(), 150.0f);
+    IsClose(cam.GetVerticalAperture(), 75.0f);
+    IsClose(cam.GetHorizontalApertureOffset(), 11.0f);
+    IsClose(cam.GetVerticalApertureOffset(), 12.0f);
+
+    CameraUtilConformWindow(&cam, CameraUtilFit, 1.5);
+
+    IsClose(cam.GetHorizontalAperture(), 150.0f);
+    IsClose(cam.GetVerticalAperture(), 100.0f);
+    IsClose(cam.GetHorizontalApertureOffset(), 11.0f);
+    IsClose(cam.GetVerticalApertureOffset(), 12.0f);
+}
+
+TEST_F(TestCameraUtil, test_ConformFrustum) {
+    auto frustum = GfFrustum();
+    frustum.SetWindow(GfRange2d(GfVec2d(-1.2, -1.0), GfVec2d(1.0, 1.5)));
+
+    CameraUtilConformWindow(&frustum, CameraUtilCrop, 1.3333);
+
+    IsClose(frustum.GetWindow().GetMin(), GfVec2d(-1.2, -0.575020625515638));
+    IsClose(frustum.GetWindow().GetMax(), GfVec2d(1.0, 1.075020625515638));
+
+    frustum.SetWindow(GfRange2d(GfVec2d(-1.2, -1.0), GfVec2d(1.0, 1.5)));
+    CameraUtilConformWindow(&frustum, CameraUtilDontConform, 1.3333);
+    IsClose(frustum.GetWindow().GetMin(), GfVec2d(-1.2, -1.0));
+    IsClose(frustum.GetWindow().GetMax(), GfVec2d(1.0, 1.5));
 }
