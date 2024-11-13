@@ -22,6 +22,9 @@ usd_executable(TestHydra
         testHdSceneIndex.cpp
         testHdSortedIds.cpp
         testHdSortedIdsPerf.cpp
+        testHdTimeSampleArray.cpp
+        testHdTypes.cpp
+        testHdUtils.cpp
 
         LIBRARIES
         ${PXR_LIBRARY_NAMES}
