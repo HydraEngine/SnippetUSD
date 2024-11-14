@@ -6,7 +6,7 @@
 
 #include "pxr/pxr.h"
 
-#include "unitTestGLDrawing.h"
+#include "../unitTestGLDrawing.h"
 
 #include "pxr/base/arch/systemInfo.h"
 #include "pxr/base/gf/bbox3d.h"

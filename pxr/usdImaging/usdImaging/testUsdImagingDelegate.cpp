@@ -199,8 +199,8 @@ TEST(TestUSDImaging, vectorized_set_times_test) {
     delegates.push_back(&unvaryingDriver.GetDelegate());
 
     std::vector<UsdTimeCode> times;
-    times.push_back(UsdTimeCode(2));
-    times.push_back(UsdTimeCode(2));
+    times.emplace_back(2);
+    times.emplace_back(2);
 
     UsdImagingDelegate::SetTimes(delegates, times);
     varyingDriver.Draw();
@@ -348,7 +348,7 @@ TEST(TestUSDImaging, primvar_names_test1) {
     TF_VERIFY(accelerationsComparison == accelerations);
 
     HdPrimvarDescriptorVector constantPrimvars = delegate->GetPrimvarDescriptors(meshPath, HdInterpolationConstant);
-    TF_VERIFY(constantPrimvars.size() == 0);
+    TF_VERIFY(constantPrimvars.empty());
 }
 
 TEST(TestUSDImaging, primvar_names_test2) {
@@ -377,7 +377,7 @@ TEST(TestUSDImaging, primvar_names_test2) {
     TF_VERIFY(vertexPrimvars[2].name == TfToken("accelerations"));
 
     HdPrimvarDescriptorVector constantPrimvars = delegate->GetPrimvarDescriptors(meshPath, HdInterpolationConstant);
-    TF_VERIFY(constantPrimvars.size() == 0);
+    TF_VERIFY(constantPrimvars.empty());
 }
 
 TEST(TestUSDImaging, primvar_indices_test) {
@@ -531,14 +531,14 @@ class TestTask final : public HdTask {
 public:
     TestTask(Hd_UnitTestNullRenderPass& renderPass) : HdTask(SdfPath::EmptyPath()), _renderPass(renderPass) {}
 
-    virtual void Sync(HdSceneDelegate* delegate, HdTaskContext* ctx, HdDirtyBits* dirtyBits) override {
+    void Sync(HdSceneDelegate* delegate, HdTaskContext* ctx, HdDirtyBits* dirtyBits) override {
         _renderPass.Sync();
         *dirtyBits = HdChangeTracker::Clean;
     }
 
-    virtual void Prepare(HdTaskContext* ctx, HdRenderIndex* renderIndex) override {}
+    void Prepare(HdTaskContext* ctx, HdRenderIndex* renderIndex) override {}
 
-    virtual void Execute(HdTaskContext* ctx) override {}
+    void Execute(HdTaskContext* ctx) override {}
 
 private:
     Hd_UnitTestNullRenderPass& _renderPass;
@@ -639,7 +639,7 @@ TEST(TestUSDImaging, geom_subsets_test) {
 
     // Verify geom subsets.
     HdMeshTopology topo = delegate->GetMeshTopology(SdfPath("/Sphere/pSphere1"));
-    HdGeomSubsets subsets = topo.GetGeomSubsets();
+    const HdGeomSubsets& subsets = topo.GetGeomSubsets();
 
     TF_VERIFY(subsets.size() == 3);
     TF_VERIFY(subsets[0].id == SdfPath("/Sphere/pSphere1/lambert2SG"));
@@ -672,7 +672,7 @@ TEST(TestUSDImaging, geom_subsets_nested_delegate_test) {
 
     // Verify geom subsets.
     HdMeshTopology topo = delegate->GetMeshTopology(SdfPath("/Sphere/pSphere1"));
-    HdGeomSubsets subsets = topo.GetGeomSubsets();
+    const HdGeomSubsets& subsets = topo.GetGeomSubsets();
 
     TF_VERIFY(subsets.size() == 3);
     TF_VERIFY(subsets[0].id == SdfPath("/NestedDelegate/Sphere/pSphere1/lambert2SG"));
